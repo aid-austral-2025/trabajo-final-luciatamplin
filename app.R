@@ -171,18 +171,8 @@ ui <- dashboardPage(
 
 server <- function(input, output) {
   
-  datos_filtrados <- reactive({
-    
-    datos %>%
-      filter(
-        if (length(input$filtro_genero) > 0) gender %in% input$filtro_genero else TRUE,
-        if (length(input$filtro_workmode) > 0) work_mode %in% input$filtro_workmode else TRUE,
-        if (length(input$filtro_ocupacion) > 0) occupation %in% input$filtro_ocupacion else TRUE
-      )
-  })
-  
   output$plot_genero <- renderPlotly({
-    datos_contados <- datos_filtrados() %>%
+    datos_contados <- datos %>%
       count(gender, name = "Frecuencia")
     
     ggplotly(ggplot(datos_contados, aes(x = gender, y = Frecuencia)) +
@@ -197,7 +187,7 @@ server <- function(input, output) {
   })
   
   output$plot_ocupacion <- renderPlotly({
-    datos_contados <- datos_filtrados() %>%
+    datos_contados <- datos %>%
       count(occupation, name = "Frecuencia")
     
     ggplotly(ggplot(datos_contados, aes(x = occupation, y = Frecuencia)) +
@@ -212,7 +202,7 @@ server <- function(input, output) {
   })
   
   output$plot_workmode <- renderPlotly({
-    datos_contados <- datos_filtrados() %>%
+    datos_contados <- datos %>%
       count(work_mode, name = "Frecuencia")
     
     ggplotly(
@@ -335,8 +325,18 @@ server <- function(input, output) {
                      plot.margin = margin(t = 30)))
   })
   
+  datos_filtrados3 <- reactive({
+    
+    datos %>%
+      filter(
+        if (length(input$filtro_genero_s) > 0) gender %in% input$filtro_genero_s else TRUE,
+        if (length(input$filtro_workmode_s) > 0) work_mode %in% input$filtro_workmode_s else TRUE,
+        if (length(input$filtro_ocupacion_s) > 0) occupation %in% input$filtro_ocupacion_s else TRUE
+      )
+  })
+  
   output$plot_sleep_hours <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = sleep_hours)) +
+    ggplotly(ggplot(datos_filtrados3(), aes(x = sleep_hours)) +
                geom_histogram(bins = 10, fill = "#2E608B", color = "#26456E") +
                labs(title = "Horas de sueño", x = "Horas de sueño", y = "Frecuencia") +
                theme_minimal() +
@@ -344,7 +344,7 @@ server <- function(input, output) {
   })
   
   output$plot_sleep_quality <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = sleep_quality_1_5)) +
+    ggplotly(ggplot(datos_filtrados3(), aes(x = sleep_quality_1_5)) +
                geom_bar(fill = "#2E608B", color = "#26456E") +
                labs(title = "Calidad de sueño", x = "Calidad del sueño (1-5)", y = "Frecuencia") +
                theme_minimal() +
@@ -352,7 +352,7 @@ server <- function(input, output) {
   })
   
   output$plot_stress <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = stress_level_0_10)) +
+    ggplotly(ggplot(datos_filtrados3(), aes(x = stress_level_0_10)) +
                geom_histogram(bins = 10, fill = "#2E608B", color = "#26456E") +
                labs(title = "Nivel de estrés", x = "Nivel de Estrés (1-10)", y = "Frecuencia") +
                theme_minimal() +
@@ -360,7 +360,7 @@ server <- function(input, output) {
   })
   
   output$plot_ejercicio <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = exercise_minutes_per_week)) +
+    ggplotly(ggplot(datos_filtrados3(), aes(x = exercise_minutes_per_week)) +
                geom_histogram(bins = 10, fill = "#2E608B", color = "#26456E") +
                labs(title = "Minutos de ejercicio por semana", 
                     x = "Minutos de ejercicio", 
