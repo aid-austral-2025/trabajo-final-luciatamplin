@@ -235,12 +235,12 @@ ui <- dashboardPage(
         ), box(
           width = 6, plotlyOutput("plot_sleep_quality")
         )),
-        fluidRow(box(width = 6, plotlyOutput("plot_stress")), 
-                 box(width = 6, plotlyOutput("plot_ejercicio"))),
-        fluidRow(box(width = 6, plotlyOutput("plot_sue_vs_stress")), 
-                 box(width = 6, plotlyOutput("plot_calsue_vs_stress")))
-      )
-    )),
+        fluidRow(box(width = 6, plotlyOutput("plot_stress")),
+                 box(width = 6, plotlyOutput("plot_calsue_vs_stress"))),
+        
+        fluidRow(box(width = 12, plotlyOutput("plot_sue_vs_stress")))
+        )
+      )),
     
     tabItem(tabName = "salud", fluidRow(
       box(
@@ -292,11 +292,18 @@ ui <- dashboardPage(
           width = 6, plotlyOutput("plot_prod_vs_stress")
         ), box(
           width = 6, plotlyOutput("plot_salud_vs_screen")
+        )),
+        fluidRow(box(
+          width = 6, plotlyOutput("plot_ejercicio")),
+          box(width = 6, plotlyOutput("plot_social"))),
+        fluidRow(box(
+          width = 6, plotlyOutput("plot_prod_vs_ejercicio")
+        ),
+        box(width = 6, plotlyOutput("plot_salud_vs_social")))
         ))
       )
     ))
-  ))
-)
+  )
 
 
 server <- function(input, output) {
@@ -656,28 +663,14 @@ server <- function(input, output) {
     )
   })
   
-  output$plot_ejercicio <- renderPlotly({
-    ggplotly(
-      ggplot(datos_filtrados3(), aes(x = exercise_minutes_per_week)) +
-        geom_histogram(
-          bins = 10,
-          fill = "#2E608B",
-          color = "#26456E"
-        ) +
-        labs(title = "Minutos de ejercicio por semana", x = "Minutos de ejercicio", y = "Frecuencia") +
-        theme_minimal() +
-        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-    )
-  })
-  
   output$plot_sue_vs_stress <- renderPlotly({
     ggplotly(
       ggplot(
         datos_filtrados3(),
         aes(x = stress_level_0_10, y = sleep_hours)
       ) +
-        geom_point(alpha = 0.4) +
-        geom_smooth(method = "lm", color = "#FFDEAD") +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
+        geom_smooth(method = "lm", color = "#B4EEB4") +
         labs(title = "Horas de sueño vs Nivel de Estrés", x = "Nivel de estrés (0-10)", y = "Horas de sueño") +
         theme_minimal() +
         theme(plot.title = element_text(hjust = 0.5, face = "bold"))
@@ -728,8 +721,8 @@ server <- function(input, output) {
       ggplot(datos_filtrados4(), aes(x = productivity_0_100)) +
         geom_histogram(
           bins = 10,
-          fill = "#FFDEAD",
-          color = "#EECFA1"
+          fill = "#BCEE68",
+          color = "#A2CD5A"
         ) +
         labs(title = "Productividad", x = "Nivel de Productividad (0-100)", y = "Frecuencia") +
         theme_minimal() +
@@ -757,7 +750,7 @@ server <- function(input, output) {
         datos_filtrados4(),
         aes(x = stress_level_0_10, y = productivity_0_100)
       ) +
-        geom_point(alpha = 0.4) +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
         geom_smooth(method = "lm", color = "#FFDEAD") +
         labs(title = "Productividad vs Nivel de Estrés", x = "Nivel de estrés (0-10)", y = "Productividad (0-100)") +
         theme_minimal() +
@@ -771,9 +764,91 @@ server <- function(input, output) {
         datos_filtrados4(),
         aes(x = stress_level_0_10, y = mental_wellness_index_0_100)
       ) +
-        geom_point(alpha = 0.4) +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
         geom_smooth(method = "lm", color = "#EEA2AD") +
-        labs(title = "Salud mental vs Nivel de Estrés", x = "Nivel de estrés (0-10)", y = "Índice de Salud mental (0-100)") +
+        labs(title = "Salud mental vs Nivel de Estrés", 
+             x = "Nivel de estrés (0-10)", 
+             y = "Índice de Salud Mental (0-100)") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+    )
+  })
+  
+  output$plot_ejercicio <- renderPlotly({
+    ggplotly(
+      ggplot(datos_filtrados4(), aes(x = exercise_minutes_per_week)) +
+        geom_histogram(
+          bins = 8,
+          fill = "#B4CDCD",
+          color = "#7A8B8B"
+        ) +
+        labs(title = "Minutos de ejercicio por semana", 
+             x = "Minutos de ejercicio", 
+             y = "Frecuencia") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+    )
+  })
+  
+  output$plot_social <- renderPlotly({
+    ggplotly(
+      ggplot(datos_filtrados4(), aes(x = social_hours_per_week)) +
+        geom_histogram(
+          bins = 8,
+          fill = "#EEC591",
+          color = "#CDAA7D"
+        ) +
+        labs(title = "Horas sociales por semana", 
+             x = "Horas sociales", 
+             y = "Frecuencia") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+    )
+  })
+  
+  output$plot_prod_vs_stress <- renderPlotly({
+    ggplotly(
+      ggplot(
+        datos_filtrados4(),
+        aes(x = stress_level_0_10, y = productivity_0_100)
+      ) +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
+        geom_smooth(method = "lm", color = "#FFDEAD") +
+        labs(title = "Productividad vs Nivel de Estrés", 
+             x = "Nivel de estrés (0-10)", 
+             y = "Productividad (0-100)") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+    )
+  })
+  
+  output$plot_prod_vs_ejercicio <- renderPlotly({
+    ggplotly(
+      ggplot(
+        datos_filtrados4(),
+        aes(x = exercise_minutes_per_week, y = productivity_0_100)
+      ) +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
+        geom_smooth(method = "lm", color = "#7EC0EE") +
+        labs(title = "Productividad vs Minutos de ejercicio", 
+             x = "Minutos de ejercicio por semana", 
+             y = "Productividad (0-100)") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+    )
+  })
+  
+  output$plot_salud_vs_social <- renderPlotly({
+    ggplotly(
+      ggplot(
+        datos_filtrados4(),
+        aes(x = social_hours_per_week, y = mental_wellness_index_0_100)
+      ) +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
+        geom_smooth(method = "lm", color = "#EEAEEE") +
+        labs(title = "Salud mental vs Horas sociales", 
+             x = "Horas sociales por semana", 
+             y = "Índice de Salud Mental (0-100)") +
         theme_minimal() +
         theme(plot.title = element_text(hjust = 0.5, face = "bold"))
     )
