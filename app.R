@@ -470,11 +470,11 @@ server <- function(input, output) {
     tipo <- input$filtro_tipo_horas
     
     if (tipo == "screen_time_hours") {
-      "Distribución de las horas de pantalla \ntotales"
+      "Horas de pantalla totales"
     } else if (tipo == "work_screen_hours") {
-      "Distribución de las horas de pantalla \nlaborales"
+      "Horas de pantalla laborales"
     } else {
-      "Distribución de las horas de pantalla \nrecreativas"
+      "Horas de pantalla recreativas"
     }
   })
   
@@ -630,8 +630,8 @@ server <- function(input, output) {
       ggplot(datos_filtrados3(), aes(x = sleep_hours)) +
         geom_histogram(
           bins = 10,
-          fill = "#2E608B",
-          color = "#26456E"
+          fill = "#B3ABE8",
+          color = "#948AD6"
         ) +
         labs(title = "Horas de sueño", x = "Horas de sueño", y = "Frecuencia") +
         theme_minimal() +
@@ -642,7 +642,7 @@ server <- function(input, output) {
   output$plot_sleep_quality <- renderPlotly({
     ggplotly(
       ggplot(datos_filtrados3(), aes(x = sleep_quality_1_5)) +
-        geom_bar(fill = "#2E608B", color = "#26456E") +
+        geom_bar(fill = "#62C5BC", color = "#37ADB6") +
         labs(title = "Calidad de sueño", x = "Calidad del sueño (1-5)", y = "Frecuencia") +
         theme_minimal() +
         theme(plot.title = element_text(hjust = 0.5, face = "bold"))
@@ -654,8 +654,8 @@ server <- function(input, output) {
       ggplot(datos_filtrados3(), aes(x = stress_level_0_10)) +
         geom_histogram(
           bins = 10,
-          fill = "#2E608B",
-          color = "#26456E"
+          fill = "#DC8290",
+          color = "#D16D82"
         ) +
         labs(title = "Nivel de estrés", x = "Nivel de Estrés (1-10)", y = "Frecuencia") +
         theme_minimal() +
@@ -683,7 +683,7 @@ server <- function(input, output) {
         datos_filtrados3(),
         aes(x = sleep_quality_1_5, y = stress_level_0_10)
       ) +
-        geom_boxplot(fill = "#2E608B") +
+        geom_boxplot(fill = "#EDD9A9", color = "#DDB079") +
         labs(title = "Nivel de estrés según \nla calidad del sueño", x = "Calidad del sueño", y = "Nivel de estrés") +
         theme_minimal() +
         theme(
