@@ -6,6 +6,7 @@ library(shinydashboard)
 library(plotly)
 library(DT)
 library(corrplot)
+library(shinyWidgets)
 
 datos <- read_csv("datos.csv")
 
@@ -65,18 +66,19 @@ ui <- dashboardPage(
       icon = icon("mobile-screen")
     ),
     menuItem(
-      "Sueño y Bienestar físico",
-      tabName = "salud",
+      "Sueño",
+      tabName = "sueño",
       icon = icon("bed")
     ),
     menuItem(
-      "Productividad y Salud mental",
-      tabName = "prod",
-      icon = icon("brain")
+      "Bienestar físico y mental",
+      tabName = "salud",
+      icon = icon("stethoscope")
     )
   )),
   
-  dashboardBody(tabItems(
+  dashboardBody(
+    tabItems(
     tabItem(tabName = "perfil", fluidRow(
       box(
         width = 12,
@@ -84,8 +86,10 @@ ui <- dashboardPage(
         status = "primary",
         solidHeader = TRUE,
         
-        fluidRow(box(width = 6, plotlyOutput("plot_ocupacion")), box(width = 6, plotlyOutput("plot_genero"))),
-        fluidRow(box(width = 6, plotlyOutput("plot_workmode")), box(width = 6, plotlyOutput("plot_edad"))),
+        fluidRow(box(width = 6, plotlyOutput("plot_ocupacion")), 
+                 box(width = 6, plotlyOutput("plot_genero"))),
+        fluidRow(box(width = 6, plotlyOutput("plot_workmode")), 
+                 box(width = 6, plotlyOutput("plot_edad"))),
         fluidRow(box(
           width = 6, plotlyOutput("plot_mode_occupation")
         ), box(width = 6, plotlyOutput("plot_age_vs_ocu")))
@@ -135,37 +139,56 @@ ui <- dashboardPage(
           status = "primary",
           solidHeader = TRUE,
           
-          radioButtons(
-            inputId = "filtro_tipo_horas",
-            label = "Tipo de horas de pantalla",
-            inline = TRUE,
-            choices = c(
-              "Totales" = "screen_time_hours",
-              "Laborales" = "work_screen_hours",
-              "Recreativas" = "leisure_screen_hours"
-            ),
-            selected = "screen_time_hours"
+          div(
+            style = "text-align:center; font-weight:bold; font-size:18px; color:#2E608B",
+            radioGroupButtons(
+              inputId = "filtro_tipo_horas",
+              label = "Tipo de horas de pantalla:",
+              choices = c(
+                "Totales" = "screen_time_hours",
+                "Laborales" = "work_screen_hours",
+                "Recreativas" = "leisure_screen_hours"
+              ),
+              selected = "screen_time_hours",
+              justified = TRUE,
+              status = "primary",
+              checkIcon = list(
+                yes = icon("check")
+              )
+            )
           ),
         
           fluidRow(
             box(
               width = 6,
-              status = "info",
+              status = NULL,
               solidHeader = TRUE,
               plotlyOutput("plot_screen_hist")
             ),
             box(
               width = 6,
-              status = "info",
+              status = NULL,
               solidHeader = TRUE,
               plotlyOutput("plot_screen_vs_mode")
-            )
+            ),
+            box(
+              width = 6,
+              status = NULL,
+              solidHeader = TRUE,
+              plotlyOutput("plot_screen_vs_social")
+            ),
+            box(
+              width = 6,
+              status = NULL,
+              solidHeader = TRUE,
+              plotlyOutput("plot_screen_vs_prod")
+              )
           )
         )
       )
     ),
     
-    tabItem(tabName = "salud", fluidRow(
+    tabItem(tabName = "sueño", fluidRow(
       box(
         width = 3,
         title = "Filtros",
@@ -219,7 +242,7 @@ ui <- dashboardPage(
       )
     )),
     
-    tabItem(tabName = "prod", fluidRow(
+    tabItem(tabName = "salud", fluidRow(
       box(
         width = 3,
         title = "Filtros",
@@ -277,6 +300,7 @@ ui <- dashboardPage(
 
 
 server <- function(input, output) {
+  
   # Perfil de la muestra
   
   output$plot_genero <- renderPlotly({
@@ -459,6 +483,30 @@ server <- function(input, output) {
     }
   })
   
+  titulo_vs_social_r <- reactive({
+    tipo <- input$filtro_tipo_horas
+    
+    if (tipo == "screen_time_hours") {
+      "Horas de pantalla totales según \nla cantidad de horas sociales"
+    } else if (tipo == "work_screen_hours") {
+      "Horas de pantalla laborales según \nla cantidad de horas sociales"
+    } else {
+      "Horas de pantalla recreativas según \nla cantidad de horas sociales"
+    }
+  })
+  
+  titulo_vs_prod_r <- reactive({
+    tipo <- input$filtro_tipo_horas
+    
+    if (tipo == "screen_time_hours") {
+      "Horas de pantalla totales según \nel nivel de productividad"
+    } else if (tipo == "work_screen_hours") {
+      "Horas de pantalla laborales según \nel nivel de productividad"
+    } else {
+      "Horas de pantalla recreativas según \nel nivel de productividad"
+    }
+  })
+  
   output$titulo_hist <- renderText({
     titulo_hist_r()
   })
@@ -467,19 +515,29 @@ server <- function(input, output) {
     titulo_vs_mode_r()
   })
   
+  output$titulo_vs_social <- renderText({
+    titulo_vs_social_r()
+  })
+  
+  output$titulo_vs_prod <- renderText({
+    titulo_vs_prod_r()
+  })
+  
   output$plot_screen_hist <- renderPlotly({
     var <- variable_horas()
     
     ggplotly(
       ggplot(datos_filtrados2(), aes(x = .data[[var]])) +
-        geom_histogram(bins = 10, fill = "#BFE4FF", color = "#A4D5F5") +
+        geom_histogram(bins = 10, fill = "#7AC5CD", color = "#53868B") +
         labs(
           title = titulo_hist_r(),
           x = "Horas",
           y = "Frecuencia"
         ) +
         theme_minimal() +
-        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.margin = margin(t = 20)
+              )
     )
   })
   
@@ -489,14 +547,51 @@ server <- function(input, output) {
     
     ggplotly(
       ggplot(datos_filtrados2(), aes(x = work_mode, y = .data[[var]])) +
-        geom_boxplot(fill = "#FFD5B5", color = "#FFBA8F") +
+        geom_boxplot(fill = "#CCE283", color = "#A8CF60") +
         labs(
           title = titulo_vs_mode_r(),
           x = "Modalidad de trabajo",
-          y = "Horas"
+          y = "Horas de pantalla"
         ) +
         theme_minimal() +
-        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.margin = margin(t = 25))
+    )
+  })
+  
+  output$plot_screen_vs_social <- renderPlotly({
+    var <- variable_horas()
+    
+    ggplotly(
+      ggplot(datos_filtrados2(), aes(x = social_hours_per_week, y = .data[[var]])) +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
+        geom_smooth(method = "lm", color = "#CD8C95") +
+        labs(
+          title = titulo_vs_social_r(),
+          x = "Horas sociales",
+          y = "Horas de pantalla"
+        ) +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.margin = margin(t = 25))
+    )
+  })
+  
+  output$plot_screen_vs_prod <- renderPlotly({
+    var <- variable_horas()
+    
+    ggplotly(
+      ggplot(datos_filtrados2(), aes(x = productivity_0_100, y = .data[[var]])) +
+        geom_point(alpha = 0.4, color = "#8B8B7A") +
+        geom_smooth(method = "lm", color = "#CD8500") +
+        labs(
+          title = titulo_vs_prod_r(),
+          x = "Nivel de productividad",
+          y = "Horas de pantalla"
+        ) +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.margin = margin(t = 25))
     )
   })
   
