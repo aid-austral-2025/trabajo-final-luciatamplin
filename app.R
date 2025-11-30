@@ -61,6 +61,7 @@ ui <- dashboardPage(
                   title = "Características generales de la muestra",
                   status = "primary",
                   solidHeader = TRUE,
+                  
                   fluidRow(
                     box(width = 6, plotlyOutput("plot_ocupacion")),
                     box(width = 6, plotlyOutput("plot_genero"))
@@ -76,6 +77,7 @@ ui <- dashboardPage(
                 )
               )
       ),
+      
       tabItem(tabName = "digital",
               fluidRow(
                 box(
@@ -83,6 +85,7 @@ ui <- dashboardPage(
                   title = "Filtros",
                   status = "primary",
                   solidHeader = TRUE,
+                  
                   checkboxGroupInput("filtro_genero_d", "Género",
                                      choices = levels(datos$gender),
                                      selected = levels(datos$gender)),
@@ -95,10 +98,12 @@ ui <- dashboardPage(
                                      choices = levels(datos$occupation),
                                      selected = levels(datos$occupation))
                 ),
+                
                 box(
                   width = 9,
                   status = "primary",
                   solidHeader = TRUE,
+                  
                   fluidRow(
                     box(width = 6, plotlyOutput("plot_screen_total")),
                     box(width = 6, plotlyOutput("plot_screen_lab"))
@@ -110,16 +115,45 @@ ui <- dashboardPage(
                 )
               )
       ),
+      
       tabItem(tabName = "salud",
               fluidRow(
-                box(width = 6, plotlyOutput("plot_sleep_hours")),
-                box(width = 6, plotlyOutput("plot_sleep_quality"))
-              ),
-              fluidRow(
-                box(width = 6, plotlyOutput("plot_stress")),
-                box(width = 6, plotlyOutput("plot_ejercicio"))
+                box(
+                  width = 3,
+                  title = "Filtros",
+                  status = "primary",
+                  solidHeader = TRUE,
+                  
+                  checkboxGroupInput("filtro_genero_s", "Género",
+                                     choices = levels(datos$gender),
+                                     selected = levels(datos$gender)),
+                  
+                  checkboxGroupInput("filtro_workmode_s", "Modalidad de trabajo",
+                                     choices = levels(datos$work_mode),
+                                     selected = levels(datos$work_mode)),
+                  
+                  checkboxGroupInput("filtro_ocupacion_s", "Ocupación",
+                                     choices = levels(datos$occupation),
+                                     selected = levels(datos$occupation))
+                ),
+                
+                box(
+                  width = 9,
+                  status = "primary",
+                  solidHeader = TRUE,
+                  
+                  fluidRow(
+                    box(width = 6, plotlyOutput("plot_sleep_hours")),
+                    box(width = 6, plotlyOutput("plot_sleep_quality"))
+                  ),
+                  fluidRow(
+                    box(width = 6, plotlyOutput("plot_stress")),
+                    box(width = 6, plotlyOutput("plot_ejercicio"))
+                  )
+                )
               )
       ),
+      
       tabItem(tabName = "prod",
               fluidRow(
                 box(width = 6, plotlyOutput("plot_productividad")),
@@ -132,7 +166,7 @@ ui <- dashboardPage(
       )
     )
   )
-)
+) 
 
 
 server <- function(input, output) {
