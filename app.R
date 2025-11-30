@@ -86,6 +86,14 @@ ui <- dashboardPage(
                   status = "primary",
                   solidHeader = TRUE,
                   
+                  sliderInput(
+                    inputId = "filtro_edad_d",
+                    label = "Edad",
+                    min = 16,
+                    max = 60,
+                    value = c(16, 60)
+                  ),
+                  
                   checkboxGroupInput("filtro_genero_d", "Género",
                                      choices = levels(datos$gender),
                                      selected = levels(datos$gender)),
@@ -124,6 +132,14 @@ ui <- dashboardPage(
                   status = "primary",
                   solidHeader = TRUE,
                   
+                  sliderInput(
+                    inputId = "filtro_edad_s",
+                    label = "Edad",
+                    min = 16,
+                    max = 60,
+                    value = c(16, 60)
+                  ),
+                  
                   checkboxGroupInput("filtro_genero_s", "Género",
                                      choices = levels(datos$gender),
                                      selected = levels(datos$gender)),
@@ -156,8 +172,40 @@ ui <- dashboardPage(
       
       tabItem(tabName = "prod",
               fluidRow(
-                box(width = 6, plotlyOutput("plot_productividad")),
-                box(width = 6, plotlyOutput("plot_saludmental"))
+                box(
+                  width = 3,
+                  title = "Filtros",
+                  status = "primary",
+                  solidHeader = TRUE,
+                  
+                  sliderInput(
+                    inputId = "filtro_edad_p",
+                    label = "Edad",
+                    min = 16,
+                    max = 60,
+                    value = c(16, 60)
+                  ),
+                  
+                  checkboxGroupInput("filtro_genero_p", "Género",
+                                     choices = levels(datos$gender),
+                                     selected = levels(datos$gender)),
+                  
+                  checkboxGroupInput("filtro_workmode_p", "Modalidad de trabajo",
+                                     choices = levels(datos$work_mode),
+                                     selected = levels(datos$work_mode)),
+                  
+                  checkboxGroupInput("filtro_ocupacion_p", "Ocupación",
+                                     choices = levels(datos$occupation),
+                                     selected = levels(datos$occupation))
+                ),
+                
+                box(
+                  width = 9,
+                  status = "primary",
+                  solidHeader = TRUE,
+                  fluidRow(
+                    box(width = 6, plotlyOutput("plot_productividad")),
+                    box(width = 6, plotlyOutput("plot_saludmental"))
               ),
               fluidRow(
                 box(width = 6, plotlyOutput("plot_prod_vs_stress")),
@@ -165,8 +213,10 @@ ui <- dashboardPage(
               )
       )
     )
+      )
+    )
   )
-) 
+)
 
 
 server <- function(input, output) {
@@ -286,7 +336,10 @@ server <- function(input, output) {
       filter(
         if (length(input$filtro_genero_d) > 0) gender %in% input$filtro_genero_d else TRUE,
         if (length(input$filtro_workmode_d) > 0) work_mode %in% input$filtro_workmode_d else TRUE,
-        if (length(input$filtro_ocupacion_d) > 0) occupation %in% input$filtro_ocupacion_d else TRUE
+        if (length(input$filtro_ocupacion_d) > 0) occupation %in% input$filtro_ocupacion_d else TRUE,
+        
+        age >= input$filtro_edad_d[1],
+        age <= input$filtro_edad_d[2]
       )
   })
   
@@ -331,7 +384,10 @@ server <- function(input, output) {
       filter(
         if (length(input$filtro_genero_s) > 0) gender %in% input$filtro_genero_s else TRUE,
         if (length(input$filtro_workmode_s) > 0) work_mode %in% input$filtro_workmode_s else TRUE,
-        if (length(input$filtro_ocupacion_s) > 0) occupation %in% input$filtro_ocupacion_s else TRUE
+        if (length(input$filtro_ocupacion_s) > 0) occupation %in% input$filtro_ocupacion_s else TRUE,
+        
+        age >= input$filtro_edad_s[1],
+        age <= input$filtro_edad_s[2]
       )
   })
   
@@ -369,8 +425,21 @@ server <- function(input, output) {
                theme(plot.title = element_text(hjust = 0.5, face = "bold")))
   })
   
+  datos_filtrados4 <- reactive({
+    
+    datos %>%
+      filter(
+        if (length(input$filtro_genero_p) > 0) gender %in% input$filtro_genero_p else TRUE,
+        if (length(input$filtro_workmode_p) > 0) work_mode %in% input$filtro_workmode_p else TRUE,
+        if (length(input$filtro_ocupacion_p) > 0) occupation %in% input$filtro_ocupacion_p else TRUE,
+        
+        age >= input$filtro_edad_p[1],
+        age <= input$filtro_edad_p[2]
+      )
+  })
+  
   output$plot_productividad <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = productivity_0_100)) +
+    ggplotly(ggplot(datos_filtrados4(), aes(x = productivity_0_100)) +
                geom_histogram(bins = 10, fill = "#FFDEAD", color = "#EECFA1") +
                labs(title = "Productividad", x = "Nivel de Productividad (0-100)", y = "Frecuencia") +
                theme_minimal() +
@@ -378,7 +447,7 @@ server <- function(input, output) {
   })
   
   output$plot_saludmental <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = mental_wellness_index_0_100)) +
+    ggplotly(ggplot(datos_filtrados4(), aes(x = mental_wellness_index_0_100)) +
                geom_histogram(bins = 10, fill = "#EEA2AD", color = "#CD8C95") +
                labs(title = "Salud mental", x = "Índice de Salud Mental (0-100)", y = "Frecuencia") +
                theme_minimal() +
@@ -386,7 +455,7 @@ server <- function(input, output) {
   })
   
   output$plot_prod_vs_stress <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = stress_level_0_10, y = productivity_0_100)) +
+    ggplotly(ggplot(datos_filtrados4(), aes(x = stress_level_0_10, y = productivity_0_100)) +
                geom_point(alpha = 0.4) +
                geom_smooth(method = "lm", color = "#FFDEAD") +
                labs(title = "Productividad vs Nivel de Estrés", 
@@ -397,7 +466,7 @@ server <- function(input, output) {
   })
   
   output$plot_salud_vs_screen <- renderPlotly({
-    ggplotly(ggplot(datos, aes(x = stress_level_0_10, y = mental_wellness_index_0_100)) +
+    ggplotly(ggplot(datos_filtrados4(), aes(x = stress_level_0_10, y = mental_wellness_index_0_100)) +
                geom_point(alpha = 0.4) +
                geom_smooth(method = "lm", color = "#EEA2AD") +
                labs(title = "Salud mental vs Nivel de Estrés", 
